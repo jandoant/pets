@@ -2,7 +2,6 @@ package com.example.android.pets;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -68,9 +67,6 @@ public class CatalogActivity extends AppCompatActivity {
                         "Gender" + " | " +
                         "Weigth" +
                         "\n");
-
-        // Create and/or open a Database-File to read from it
-        SQLiteDatabase db = shelterDbHelper.getReadableDatabase();
         //Columns that are included in the result
         String[] columns = {
                 PetEntry.COLUMN_PET_ID,
@@ -79,9 +75,14 @@ public class CatalogActivity extends AppCompatActivity {
                 PetEntry.COLUMN_PET_GENDER,
                 PetEntry.COLUMN_PET_WEIGHT
         };
-        String orderBy = PetEntry.COLUMN_PET_ID + " ASC";
-        //QUERY
-        Cursor cursor = db.query(PetEntry.TABLE_NAME_PETS, columns, null, null, null, null, orderBy, null);
+        //WHERE
+        String selection = "";
+        String[] selectionArgs = new String[]{};
+        //ORDER BY
+        String sortOrder = PetEntry.COLUMN_PET_ID + " ASC";
+
+        //Result
+        Cursor cursor = getContentResolver().query(PetEntry.CONTENT_URI_PETS, columns, selection, selectionArgs, sortOrder);
 
         try {
             int idColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_ID);
@@ -91,7 +92,6 @@ public class CatalogActivity extends AppCompatActivity {
             int weightColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_WEIGHT);
 
             while (cursor.moveToNext()) {
-
                 //Read Values of the current Row
                 int id = cursor.getInt(idColumnIndex);
                 String name = cursor.getString(nameColumnIndex);

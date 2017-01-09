@@ -52,6 +52,9 @@ the License.
 * adds Pet Object
 * database info is shown in simple Text View
 
+###v.02 add Content Provider to App - (1)
+* read all Pets provided through content provider instead ofdirect database access
+
 
 
 
