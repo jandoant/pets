@@ -26,48 +26,54 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
+
+import com.example.android.pets.database.PetContract.PetEntry;
+import com.example.android.pets.database.ShelterDbHelper;
+import com.example.android.pets.models.Pet;
 
 /**
  * Allows user to create a new pet or edit an existing one.
  */
 public class EditorActivity extends AppCompatActivity {
 
+    ShelterDbHelper shelterDbHelper;
     /**
      * EditText field to enter the pet's name
      */
-    private EditText mNameEditText;
-
+    private EditText edit_txt_name;
     /**
      * EditText field to enter the pet's breed
      */
-    private EditText mBreedEditText;
-
+    private EditText edit_txt_breed;
     /**
      * EditText field to enter the pet's weight
      */
-    private EditText mWeightEditText;
-
+    private EditText edit_txt_weight;
     /**
      * EditText field to enter the pet's gender
      */
-    private Spinner mGenderSpinner;
-
+    private Spinner spinner_gender;
     /**
      * Gender of the pet. The possible values are:
      * 0 for unknown gender, 1 for male, 2 for female.
      */
-    private int mGender = 0;
+    private int gender_pet = PetEntry.PET_GENDER_UNKNOWN;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
 
+        // To access our database, we instantiate our subclass of SQLiteOpenHelper
+        // and pass the context, which is the current activity.
+        shelterDbHelper = new ShelterDbHelper(this);
+
         // Find all relevant views that we will need to read user input from
-        mNameEditText = (EditText) findViewById(R.id.edit_pet_name);
-        mBreedEditText = (EditText) findViewById(R.id.edit_pet_breed);
-        mWeightEditText = (EditText) findViewById(R.id.edit_pet_weight);
-        mGenderSpinner = (Spinner) findViewById(R.id.spinner_gender);
+        edit_txt_name = (EditText) findViewById(R.id.edit_pet_name);
+        edit_txt_breed = (EditText) findViewById(R.id.edit_pet_breed);
+        edit_txt_weight = (EditText) findViewById(R.id.edit_pet_weight);
+        spinner_gender = (Spinner) findViewById(R.id.spinner_gender);
 
         setupSpinner();
     }
@@ -82,22 +88,21 @@ public class EditorActivity extends AppCompatActivity {
 
         // Specify dropdown layout style - simple list view with 1 item per line
         genderSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
-
         // Apply the adapter to the spinner
-        mGenderSpinner.setAdapter(genderSpinnerAdapter);
+        spinner_gender.setAdapter(genderSpinnerAdapter);
 
         // Set the integer mSelected to the constant values
-        mGenderSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        spinner_gender.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selection = (String) parent.getItemAtPosition(position);
                 if (!TextUtils.isEmpty(selection)) {
                     if (selection.equals(getString(R.string.gender_male))) {
-                        mGender = 1; // Male
+                        gender_pet = PetEntry.PET_GENDER_MALE;
                     } else if (selection.equals(getString(R.string.gender_female))) {
-                        mGender = 2; // Female
+                        gender_pet = PetEntry.PET_GENDER_FEMALE;
                     } else {
-                        mGender = 0; // Unknown
+                        gender_pet = PetEntry.PET_GENDER_UNKNOWN;
                     }
                 }
             }
@@ -105,7 +110,7 @@ public class EditorActivity extends AppCompatActivity {
             // Because AdapterView is an abstract class, onNothingSelected must be defined
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                mGender = 0; // Unknown
+                gender_pet = PetEntry.PET_GENDER_UNKNOWN;
             }
         });
     }
@@ -124,7 +129,9 @@ public class EditorActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
-                // Do nothing for now
+                Pet newPet = createPetFromUserInput();
+                insertNewPet(newPet);
+                finish();
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
@@ -137,5 +144,25 @@ public class EditorActivity extends AppCompatActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    //Todo: implement createPetFromUserInput()
+    private Pet createPetFromUserInput() {
+
+        String name = edit_txt_name.getText().toString().trim();
+        String breed = edit_txt_breed.getText().toString().trim();
+        int gender = gender_pet;
+        int weight = Integer.parseInt(edit_txt_weight.getText().toString().trim());
+
+        return new Pet(0, name, breed, gender, weight);
+    }
+
+    private void insertNewPet(Pet newPet) {
+
+        if (shelterDbHelper.insertSinglePet(newPet)) {
+            Toast.makeText(this, newPet.getName() + " has been added to the Shelter.", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, newPet.getName() + " could not be added to the Shelter.", Toast.LENGTH_SHORT).show();
+        }
     }
 }
