@@ -57,5 +57,7 @@ the License.
 
 ###v.03 insert operation via Content Provider
 
+###v.04 update operation via Content Provider
+
 
 
