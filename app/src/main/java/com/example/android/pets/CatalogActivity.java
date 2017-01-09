@@ -1,5 +1,6 @@
 package com.example.android.pets;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -142,11 +143,14 @@ public class CatalogActivity extends AppCompatActivity {
 
         Pet dummyPet = new Pet(0, "Juniper", "French Bulldog", PetEntry.PET_GENDER_MALE, 9);
 
-        if (shelterDbHelper.insertSinglePet(dummyPet)) {
-            Toast.makeText(this, dummyPet.getName() + " has been added to the Shelter.", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, dummyPet.getName() + " could not be added to the Shelter.", Toast.LENGTH_SHORT).show();
-        }
+        ContentValues values = new ContentValues();
+
+        values.put(PetEntry.COLUMN_PET_NAME, dummyPet.getName());
+        values.put(PetEntry.COLUMN_PET_BREED, dummyPet.getBreed());
+        values.put(PetEntry.COLUMN_PET_GENDER, dummyPet.getGender());
+        values.put(PetEntry.COLUMN_PET_WEIGHT, dummyPet.getWeight());
+
+        getContentResolver().insert(PetEntry.CONTENT_URI_PETS, values);
     }
 
     private void deleteAllPets() {

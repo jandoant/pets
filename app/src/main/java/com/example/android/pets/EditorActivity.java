@@ -15,7 +15,10 @@
  */
 package com.example.android.pets;
 
+import android.content.ContentValues;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -146,7 +149,6 @@ public class EditorActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    //Todo: implement createPetFromUserInput()
     private Pet createPetFromUserInput() {
 
         String name = edit_txt_name.getText().toString().trim();
@@ -159,10 +161,28 @@ public class EditorActivity extends AppCompatActivity {
 
     private void insertNewPet(Pet newPet) {
 
-        if (shelterDbHelper.insertSinglePet(newPet)) {
-            Toast.makeText(this, newPet.getName() + " has been added to the Shelter.", Toast.LENGTH_SHORT).show();
+        Uri result = getContentResolver().insert(PetEntry.CONTENT_URI_PETS, createValuesFromPet(newPet));
+
+        // Show a toast message depending on whether or not the insertion was successful
+        if (result == null) {
+            // If the new content URI is null, then there was an error with insertion.
+            Toast.makeText(this, "Error with saving pet.", Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(this, newPet.getName() + " could not be added to the Shelter.", Toast.LENGTH_SHORT).show();
+            // Otherwise, the insertion was successful and we can display a toast.
+            Toast.makeText(this, "Pet saved", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @NonNull
+    private ContentValues createValuesFromPet(Pet pet) {
+
+        ContentValues values = new ContentValues();
+
+        values.put(PetEntry.COLUMN_PET_NAME, pet.getName());
+        values.put(PetEntry.COLUMN_PET_BREED, pet.getBreed());
+        values.put(PetEntry.COLUMN_PET_GENDER, pet.getGender());
+        values.put(PetEntry.COLUMN_PET_WEIGHT, pet.getWeight());
+
+        return values;
     }
 }

@@ -7,6 +7,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
 public class PetProvider extends ContentProvider {
 
@@ -38,9 +39,29 @@ public class PetProvider extends ContentProvider {
      * Insert new data into the provider with the given ContentValues.
      */
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
+    public Uri insert(@NonNull Uri uri, ContentValues values) {
 
-        return null;
+        int match = uriMatcher.match(uri);
+
+        //catch illegal Uris
+        switch (match) {
+            case PETS:
+                return insertSinglePet(uri, values);
+            default:
+                throw new IllegalArgumentException("Insertion is not supported for " + uri);
+        }//Ende switch
+    }
+
+    private Uri insertSinglePet(Uri uri, ContentValues values) {
+
+        SQLiteDatabase db = shelterDbHelper.getWritableDatabase();
+        long row = db.insert(PetContract.PetEntry.TABLE_NAME_PETS, null, values);
+
+        if (row == -1) {
+            return null;
+        }
+
+        return ContentUris.withAppendedId(uri, row);
     }
 
     /**

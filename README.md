@@ -55,6 +55,7 @@ the License.
 ###v.02 add Content Provider to App - (1)
 * read all Pets provided through content provider instead ofdirect database access
 
+###v.03 insert operation via Content Provider
 
 
 
