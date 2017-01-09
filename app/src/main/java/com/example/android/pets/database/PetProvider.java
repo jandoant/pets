@@ -178,7 +178,20 @@ public class PetProvider extends ContentProvider {
      */
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        return 0;
+
+        int match = uriMatcher.match(uri);
+        SQLiteDatabase db = shelterDbHelper.getWritableDatabase();
+        //catch illegal Uris
+        switch (match) {
+            case PETS:
+                return db.delete(PetEntry.TABLE_NAME_PETS, selection, selectionArgs);
+            case PET_ID:
+                selection = PetEntry.COLUMN_PET_ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                return db.delete(PetEntry.TABLE_NAME_PETS, selection, selectionArgs);
+            default:
+                throw new IllegalArgumentException("Insertion is not supported for " + uri);
+        }//Ende switch
     }
 
     /**

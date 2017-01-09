@@ -10,7 +10,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.android.pets.database.PetContract.PetEntry;
 import com.example.android.pets.database.ShelterDbHelper;
@@ -153,12 +152,7 @@ public class CatalogActivity extends AppCompatActivity {
         getContentResolver().insert(PetEntry.CONTENT_URI_PETS, values);
     }
 
-    private void deleteAllPets() {
-
-        if (shelterDbHelper.deleteAllPetsEntries()) {
-            Toast.makeText(this, "All Pets have been deleted.", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "No Pets could be deleted.", Toast.LENGTH_SHORT).show();
-        }
+    private int deleteAllPets() {
+        return getContentResolver().delete(PetEntry.CONTENT_URI_PETS, null, null);
     }
 }

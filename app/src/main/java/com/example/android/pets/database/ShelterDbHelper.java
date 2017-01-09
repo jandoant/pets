@@ -1,12 +1,10 @@
 package com.example.android.pets.database;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.android.pets.database.PetContract.PetEntry;
-import com.example.android.pets.models.Pet;
 
 /**
  * Created by Jan on 05.01.2017.
@@ -50,40 +48,5 @@ public class ShelterDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-    }
-
-    //Todo: (6) - Implement insertSinglePet()
-
-    /**
-     * Inserts a new single Pet-Object into the pets-Table of shelter.db
-     *
-     * @param pet - The Pet to be inserted
-     * @return - true if insertion was successfull, false if an Error occured during the operation
-     */
-    public boolean insertSinglePet(Pet pet) {
-
-        // Open the Database-File to write into
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        //bind Pet data to database-rows
-        ContentValues values = new ContentValues();
-        values.put(PetEntry.COLUMN_PET_NAME, pet.getName());
-        values.put(PetEntry.COLUMN_PET_BREED, pet.getBreed());
-        values.put(PetEntry.COLUMN_PET_GENDER, pet.getGender());
-        values.put(PetEntry.COLUMN_PET_WEIGHT, pet.getWeight());
-
-        //insert data and receive success-info
-        return db.insert(PetEntry.TABLE_NAME_PETS, null, values) >= 0;
-    }
-
-    public void readAllPetsFromDB() {
-
-    }
-
-    public boolean deleteAllPetsEntries() {
-        // Open the Database-File to write into
-        SQLiteDatabase db = this.getWritableDatabase();
-        //delete entire Table pets and return number if any rows were affected
-        return db.delete(PetEntry.TABLE_NAME_PETS, "1", null) > 0;
     }
 }

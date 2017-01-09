@@ -59,5 +59,7 @@ the License.
 
 ###v.04 update operation via Content Provider
 
+###v.05 delete operation via Content Provider
+
 
 

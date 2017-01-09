@@ -15,6 +15,7 @@
  */
 package com.example.android.pets;
 
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.net.Uri;
 import android.os.Bundle;
@@ -34,6 +35,8 @@ import android.widget.Toast;
 import com.example.android.pets.database.PetContract.PetEntry;
 import com.example.android.pets.database.ShelterDbHelper;
 import com.example.android.pets.models.Pet;
+
+import static android.R.attr.id;
 
 /**
  * Allows user to create a new pet or edit an existing one.
@@ -184,5 +187,9 @@ public class EditorActivity extends AppCompatActivity {
         values.put(PetEntry.COLUMN_PET_WEIGHT, pet.getWeight());
 
         return values;
+    }
+
+    private int deletePet(int petId) {
+        return getContentResolver().delete(ContentUris.withAppendedId(PetEntry.CONTENT_URI_PETS, id), null, null);
     }
 }
