@@ -81,6 +81,12 @@ the License.
   * when entering no weight value -> save 0kg
   * dont create new Pet when no Data is entered
 
+### v.11 warn user about unsaved changes
+   * Alert Dialog
+   * on Back- an Up-Navigation
+   * if user has clicked into any edit Field
+
+
 
 
 

@@ -19,16 +19,19 @@ import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NavUtils;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -45,11 +48,12 @@ import static android.R.attr.id;
 /**
  * Allows user to create a new pet or edit an existing one.
  */
-public class EditorActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class EditorActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, View.OnTouchListener {
 
     private static final int LOADER_ID = 1;
     ShelterDbHelper shelterDbHelper;
     Uri uri;
+    private boolean petHasChanged = false;
     private EditText edit_txt_name;
     private EditText edit_txt_breed;
     private EditText edit_txt_weight;
@@ -72,6 +76,12 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         edit_txt_breed = (EditText) findViewById(R.id.edit_pet_breed);
         edit_txt_weight = (EditText) findViewById(R.id.edit_pet_weight);
         spinner_gender = (Spinner) findViewById(R.id.spinner_gender);
+
+        // Put On Touch Listeners to all Input Fields
+        edit_txt_name.setOnTouchListener(this);
+        edit_txt_breed.setOnTouchListener(this);
+        edit_txt_weight.setOnTouchListener(this);
+        spinner_gender.setOnTouchListener(this);
 
         /*
         Prepare the loader.  Either re-connect with an existing one, or start a new one.
@@ -164,8 +174,19 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 return true;
             // Respond to a click on the "Up" arrow button in the app bar
             case android.R.id.home:
-                // Navigate back to parent activity (CatalogActivity)
-                NavUtils.navigateUpFromSameTask(this);
+                if (petHasChanged) {
+                    //When user clicks Discard - finish Activity
+                    showUnsavedChangesDialog(new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // User clicked "Discard" button, navigate to parent activity.
+                            NavUtils.navigateUpFromSameTask(EditorActivity.this);
+                        }
+                    });
+                } else {
+                    NavUtils.navigateUpFromSameTask(this);
+                }
+
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -211,6 +232,34 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         return true;
     }
 
+    private void showUnsavedChangesDialog(DialogInterface.OnClickListener discardButtonClickListener) {
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        //Message
+        builder.setMessage(R.string.unsaved_changes_dialog_msg);
+
+        //Positive Button - Discard Changes and navigate back to Catalog Activity
+        //Behaviour differs between Back and Up-Button
+        builder.setPositiveButton(R.string.alert_discard, discardButtonClickListener);
+
+        //Negative Button - Back to Edit Activity
+        //Behaviour is the same wether Back or Up-Button is clicked
+        builder.setNegativeButton(R.string.alert_keep_editing, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //Back to Edit Activity
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
     private void insertNewPet(Pet pet) {
         Uri result = getContentResolver().insert(PetEntry.CONTENT_URI_PETS, createValuesFromPet(pet));
 
@@ -249,6 +298,23 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         values.put(PetEntry.COLUMN_PET_WEIGHT, pet.getWeight());
 
         return values;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (petHasChanged) {
+            //show Dialog and define Behaviour of the Discard Button
+            showUnsavedChangesDialog(new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    // User clicked "Discard" button, close the current activity.
+                    finish();
+                }
+            });
+        } else {
+            //don't show any Dialog
+            super.onBackPressed();
+        }
     }
 
     private int deletePet(int petId) {
@@ -300,5 +366,13 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         edit_txt_breed.setText("");
         spinner_gender.setSelection(PetEntry.PET_GENDER_UNKNOWN);
         edit_txt_weight.setText("");
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+
+        petHasChanged = true;
+
+        return false;
     }
 }
