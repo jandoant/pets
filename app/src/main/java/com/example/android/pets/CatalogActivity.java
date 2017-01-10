@@ -9,17 +9,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.ListView;
 
 import com.example.android.pets.database.PetContract.PetEntry;
 import com.example.android.pets.database.ShelterDbHelper;
 import com.example.android.pets.models.Pet;
 
+import static com.example.android.pets.R.menu.menu_catalog;
+
 /**
  * Displays list of pets that were entered and stored in the app.
  */
 public class CatalogActivity extends AppCompatActivity {
-
+    ListView listView;
     ShelterDbHelper shelterDbHelper;
 
     @Override
@@ -27,10 +29,11 @@ public class CatalogActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_catalog);
 
+        listView = (ListView) findViewById(R.id.list_pets);
+
         // To access our database, we instantiate our subclass of SQLiteOpenHelper
         // and pass the context, which is the current activity.
         shelterDbHelper = new ShelterDbHelper(this);
-
         setUpFAB();
     }
 
@@ -49,90 +52,93 @@ public class CatalogActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        displayDatabaseInfo();
+        displayPetsCatalog();
     }
 
     /**
-     * Temporary helper method to display information in the onscreen TextView about the state of
+     * Temporary helper method to display information in the onscreen ListView about the state of
      * the pets database.
      */
-    private void displayDatabaseInfo() {
+    private void displayPetsCatalog() {
 
-        TextView txt_display_info = (TextView) findViewById(R.id.text_view_pet);
-        //Header
-        txt_display_info.setText(
-                "ID" + " | " +
-                        "Name" + " | " +
-                        "Breed" + " | " +
-                        "Gender" + " | " +
-                        "Weigth" +
-                        "\n");
-        //Columns that are included in the result
+        /*
+        Result to display
+         */
+        Cursor cursor = queryCatalogData();
+
+        /*
+        Set Empty View
+         */
+        View emptyView = findViewById(R.id.empty_view);
+        listView.setEmptyView(emptyView);
+
+        /*
+        Assign Adapter
+         */
+        PetCursorAdapter adapter = new PetCursorAdapter(this, cursor);
+        listView.setAdapter(adapter);
+    }
+
+    /**
+     * Helper Method to query Data that is displayed in List View
+     *
+     * @return Cursor that contains the result of the Query
+     */
+    private Cursor queryCatalogData() {
+
+        /*
+        Columns that are included in the result
+         */
         String[] columns = {
                 PetEntry.COLUMN_PET_ID,
                 PetEntry.COLUMN_PET_NAME,
-                PetEntry.COLUMN_PET_BREED,
-                PetEntry.COLUMN_PET_GENDER,
-                PetEntry.COLUMN_PET_WEIGHT
+                PetEntry.COLUMN_PET_BREED
         };
-        //WHERE
+
+        /*
+        WHERE
+         */
         String selection = "";
         String[] selectionArgs = new String[]{};
-        //ORDER BY
+
+        /*
+        ORDER BY
+         */
         String sortOrder = PetEntry.COLUMN_PET_ID + " ASC";
 
-        //Result
-        Cursor cursor = getContentResolver().query(PetEntry.CONTENT_URI_PETS, columns, selection, selectionArgs, sortOrder);
-
-        try {
-            int idColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_ID);
-            int nameColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_NAME);
-            int breedColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_BREED);
-            int genderColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_GENDER);
-            int weightColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_WEIGHT);
-
-            while (cursor.moveToNext()) {
-                //Read Values of the current Row
-                int id = cursor.getInt(idColumnIndex);
-                String name = cursor.getString(nameColumnIndex);
-                String breed = cursor.getString(breedColumnIndex);
-                int gender = cursor.getInt(genderColumnIndex);
-                int weight = cursor.getInt(weightColumnIndex);
-
-                //Display Values
-                txt_display_info.append(id + " | ");
-                txt_display_info.append(name + " | ");
-                txt_display_info.append(breed + " | ");
-                txt_display_info.append(gender + " | ");
-                txt_display_info.append(weight + "");
-                txt_display_info.append("\n");
-            }
-        } finally {
-            cursor.close();
-        }
+        /*
+        Result - Read from entire Table
+         */
+        return getContentResolver().query(PetEntry.CONTENT_URI_PETS, columns, selection, selectionArgs, sortOrder);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu options from the res/menu/menu_catalog.xml file.
-        // This adds menu items to the app bar.
-        getMenuInflater().inflate(R.menu.menu_catalog, menu);
+        /*
+        Inflate the menu options from the res/menu/menu_catalog.xml file.
+        This adds menu items to the app bar.
+        */
+        getMenuInflater().inflate(menu_catalog, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // User clicked on a menu option in the app bar overflow menu
+
         switch (item.getItemId()) {
-            // Respond to a click on the "Insert dummy data" menu option
+            /*
+            Insert a dummy Pet
+            */
             case R.id.action_insert_dummy_data:
                 insertDummyPet();
-                displayDatabaseInfo();
+                displayPetsCatalog();
                 return true;
-            // Respond to a click on the "Delete all entries" menu option
+            /*
+            Delete all Entries
+             */
             case R.id.action_delete_all_entries:
                 deleteAllPets();
-                displayDatabaseInfo();
+                displayPetsCatalog();
                 return true;
         }
         return super.onOptionsItemSelected(item);

@@ -63,5 +63,12 @@ the License.
 
 ###v.06. Finished Content Provider Implementation
 
+###v.07 Display Data in  List View
+* create List View in Layout of CatalogActivity
+* create List Item XML
+* create EmptyView
+* create Pet Cursor Adapter
+
+
 
 
