@@ -1,17 +1,20 @@
 package com.example.android.pets;
 
 import android.app.LoaderManager;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.example.android.pets.data.ShelterContract.PetEntry;
@@ -65,6 +68,13 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         Assign Adapter (is initialized in @Link onLoadFinished())
          */
         listView.setAdapter(adapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                openEditorActivity(id);
+            }
+        });
     }
 
     private void setUpFAB() {
@@ -73,10 +83,23 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         btn_fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
-                startActivity(intent);
+                openEditorActivity(-1);
             }
         });
+    }
+
+    private void openEditorActivity(long id) {
+
+        Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
+
+        Uri petUri;
+        if (id == -1) {
+            petUri = null;
+        } else {
+            petUri = ContentUris.withAppendedId(PetEntry.CONTENT_URI_PETS, id);
+        }
+        intent.setData(petUri);
+        startActivity(intent);
     }
 
     @Override

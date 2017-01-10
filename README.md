@@ -71,6 +71,12 @@ the License.
 
 ###v.08 Using a Cursor Loader
 
+###v.09 update Editor Activity to insert AND edit data
+* depending on mode (insert/update):
+  * display ActionBarTitle
+  * prepopulate Edit Text Fields
+  * insert on save / update on save
+
 
 
 
