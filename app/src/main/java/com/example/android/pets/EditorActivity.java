@@ -148,10 +148,16 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         switch (item.getItemId()) {
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
+
                 Pet pet = createPetFromUserInput();
-                savePet(pet);
-                finish();
+
+                if (savePet(pet)) {
+                    finish();
+                } else {
+                    Toast.makeText(this, "Please put in some Values", Toast.LENGTH_SHORT).show();
+                }
                 return true;
+
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
                 // Do nothing for now
@@ -170,12 +176,29 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         String name = edit_txt_name.getText().toString().trim();
         String breed = edit_txt_breed.getText().toString().trim();
         int gender = gender_pet;
-        int weight = Integer.parseInt(edit_txt_weight.getText().toString().trim());
+        int weight;
+        String strWeight = edit_txt_weight.getText().toString().trim();
+        //if no Weigth is inserted then save 0kg
+        if (TextUtils.isEmpty(strWeight)) {
+            weight = 0;
+        } else {
+            weight = Integer.parseInt(strWeight);
+        }
 
-        return new Pet(0, name, breed, gender, weight);
+        // Avoid inserting a new Pet when Save Button is hit accidentially (no Values put in)
+        // The Validation by the PetProvider  causes an Exception when trying to do that - causes App to crash
+        if (TextUtils.isEmpty(name) && TextUtils.isEmpty(breed) && gender == PetEntry.PET_GENDER_UNKNOWN && TextUtils.isEmpty(strWeight)) {
+            return null;
+        } else {
+            return new Pet(0, name, breed, gender, weight);
+        }
     }
 
-    private void savePet(Pet pet) {
+    private boolean savePet(Pet pet) {
+
+        if (pet == null) {
+            return false;
+        }
 
         if (uri == null) {
             //Insert Mode
@@ -184,6 +207,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             //Update Mode
             updateExistingPet(pet);
         }
+
+        return true;
     }
 
     private void insertNewPet(Pet pet) {

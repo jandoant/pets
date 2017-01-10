@@ -77,6 +77,10 @@ the License.
   * prepopulate Edit Text Fields
   * insert on save / update on save
 
+### v.10 fix some little bugs
+  * when entering no weight value -> save 0kg
+  * dont create new Pet when no Data is entered
+
 
 
 
