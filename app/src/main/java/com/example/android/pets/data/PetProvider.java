@@ -1,4 +1,4 @@
-package com.example.android.pets.database;
+package com.example.android.pets.data;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;
@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
-import com.example.android.pets.database.PetContract.PetEntry;
+import com.example.android.pets.data.ShelterContract.PetEntry;
 
 public class PetProvider extends ContentProvider {
 
@@ -22,8 +22,8 @@ public class PetProvider extends ContentProvider {
 
     static {
         //assigns Response Code to Uri
-        uriMatcher.addURI(PetContract.CONTENT_AUTHORITY_APP, PetContract.PATH_PETS, PETS);
-        uriMatcher.addURI(PetContract.CONTENT_AUTHORITY_APP, PetContract.PATH_PETS + "/#", PET_ID);
+        uriMatcher.addURI(ShelterContract.CONTENT_AUTHORITY_APP, ShelterContract.PATH_PETS, PETS);
+        uriMatcher.addURI(ShelterContract.CONTENT_AUTHORITY_APP, ShelterContract.PATH_PETS + "/#", PET_ID);
     }
 
     private ShelterDbHelper shelterDbHelper;
@@ -89,8 +89,12 @@ public class PetProvider extends ContentProvider {
         //Insertion
         SQLiteDatabase db = shelterDbHelper.getWritableDatabase();
         long row = db.insert(PetEntry.TABLE_NAME_PETS, null, values);
+
         if (row == -1) {
             return null;
+        } else {
+            //Notify the observer, that the Data has changed - autoUpdate
+            getContext().getContentResolver().notifyChange(uri, null);
         }
 
         return ContentUris.withAppendedId(uri, row);
@@ -127,6 +131,10 @@ public class PetProvider extends ContentProvider {
                 throw new IllegalArgumentException("Cannot query unknown Uri" + uri);
         }//Ende switch
 
+        if (cursor != null) {
+            cursor.setNotificationUri(getContext().getContentResolver(), uri);
+        }
+
         return cursor;
     }
 
@@ -142,17 +150,17 @@ public class PetProvider extends ContentProvider {
         //catch illegal Uris
         switch (match) {
             case PETS:
-                return updatePet(values, selection, selectionArgs);
+                return updatePet(uri, values, selection, selectionArgs);
             case PET_ID:
                 selection = PetEntry.COLUMN_PET_ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-                return updatePet(values, selection, selectionArgs);
+                return updatePet(uri, values, selection, selectionArgs);
             default:
                 throw new IllegalArgumentException("Insertion is not supported for " + uri);
         }//Ende switch
     }
 
-    private int updatePet(ContentValues values, String selection, String[] selectionArgs) {
+    private int updatePet(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         //Validation
         // If the {@link PetEntry#COLUMN_PET_NAME} key is present,
         // check that the name value is not null.
@@ -184,7 +192,14 @@ public class PetProvider extends ContentProvider {
 
         SQLiteDatabase db = shelterDbHelper.getWritableDatabase();
 
-        return db.update(PetEntry.TABLE_NAME_PETS, values, selection, selectionArgs);
+        int updatedRows = db.update(PetEntry.TABLE_NAME_PETS, values, selection, selectionArgs);
+
+        //Notify the observer, that the Data has changed - autoUpdate
+        if (updatedRows > 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
+        return updatedRows;
     }
 
     /**
@@ -193,19 +208,32 @@ public class PetProvider extends ContentProvider {
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
 
-        int match = uriMatcher.match(uri);
         SQLiteDatabase db = shelterDbHelper.getWritableDatabase();
+
+        int deletedRows;
+
+        int match = uriMatcher.match(uri);
+
         //catch illegal Uris
         switch (match) {
             case PETS:
-                return db.delete(PetEntry.TABLE_NAME_PETS, selection, selectionArgs);
+                deletedRows = db.delete(PetEntry.TABLE_NAME_PETS, selection, selectionArgs);
+                break;
             case PET_ID:
                 selection = PetEntry.COLUMN_PET_ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-                return db.delete(PetEntry.TABLE_NAME_PETS, selection, selectionArgs);
+                deletedRows = db.delete(PetEntry.TABLE_NAME_PETS, selection, selectionArgs);
+                break;
             default:
                 throw new IllegalArgumentException("Insertion is not supported for " + uri);
         }//Ende switch
+
+        //Notify the observer, that the Data has changed - autoUpdate
+        if (deletedRows > 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
+        return deletedRows;
     }
 
     /**

@@ -1,10 +1,10 @@
-package com.example.android.pets.database;
+package com.example.android.pets.data;
 
 import android.content.ContentResolver;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
-public final class PetContract {
+public final class ShelterContract {
 
     public static final String CONTENT_AUTHORITY_APP = "com.example.android.pets";
     public static final Uri BASE_CONTENT_URI_APP = Uri.parse("content://" + CONTENT_AUTHORITY_APP);
@@ -14,7 +14,7 @@ public final class PetContract {
 
     // To prevent someone from accidentally instantiating the contract class,
     // make the constructor private.
-    private PetContract() {
+    private ShelterContract() {
     }
 
     /* Inner class for table pets that defines the table contents */

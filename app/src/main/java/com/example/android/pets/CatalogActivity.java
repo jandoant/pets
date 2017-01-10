@@ -1,7 +1,10 @@
 package com.example.android.pets;
 
+import android.app.LoaderManager;
 import android.content.ContentValues;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -11,8 +14,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 
-import com.example.android.pets.database.PetContract.PetEntry;
-import com.example.android.pets.database.ShelterDbHelper;
+import com.example.android.pets.data.ShelterContract.PetEntry;
+import com.example.android.pets.data.ShelterDbHelper;
 import com.example.android.pets.models.Pet;
 
 import static com.example.android.pets.R.menu.menu_catalog;
@@ -20,21 +23,48 @@ import static com.example.android.pets.R.menu.menu_catalog;
 /**
  * Displays list of pets that were entered and stored in the app.
  */
-public class CatalogActivity extends AppCompatActivity {
-    ListView listView;
+public class CatalogActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+    private static final int LOADER_ID = 1;
     ShelterDbHelper shelterDbHelper;
+    private PetCursorAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_catalog);
 
-        listView = (ListView) findViewById(R.id.list_pets);
-
-        // To access our database, we instantiate our subclass of SQLiteOpenHelper
+        // To access our data, we instantiate our subclass of SQLiteOpenHelper
         // and pass the context, which is the current activity.
         shelterDbHelper = new ShelterDbHelper(this);
+
+        setUpListView();
         setUpFAB();
+
+        /*
+        Prepare the loader.  Either re-connect with an existing one, or start a new one.
+        */
+        getLoaderManager().initLoader(LOADER_ID, null, this);
+    }
+
+    /**
+     * Display information in the onscreen ListView about the state of
+     * the pets data. The data itself ist retrieved in a background operation using CursorLoader
+     */
+    private void setUpListView() {
+
+        adapter = new PetCursorAdapter(this, null);
+
+        ListView listView = (ListView) findViewById(R.id.list_pets);
+        /*
+        Set Empty View
+         */
+        View emptyView = findViewById(R.id.empty_view);
+        listView.setEmptyView(emptyView);
+
+        /*
+        Assign Adapter (is initialized in @Link onLoadFinished())
+         */
+        listView.setAdapter(adapter);
     }
 
     private void setUpFAB() {
@@ -52,64 +82,6 @@ public class CatalogActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        displayPetsCatalog();
-    }
-
-    /**
-     * Temporary helper method to display information in the onscreen ListView about the state of
-     * the pets database.
-     */
-    private void displayPetsCatalog() {
-
-        /*
-        Result to display
-         */
-        Cursor cursor = queryCatalogData();
-
-        /*
-        Set Empty View
-         */
-        View emptyView = findViewById(R.id.empty_view);
-        listView.setEmptyView(emptyView);
-
-        /*
-        Assign Adapter
-         */
-        PetCursorAdapter adapter = new PetCursorAdapter(this, cursor);
-        listView.setAdapter(adapter);
-    }
-
-    /**
-     * Helper Method to query Data that is displayed in List View
-     *
-     * @return Cursor that contains the result of the Query
-     */
-    private Cursor queryCatalogData() {
-
-        /*
-        Columns that are included in the result
-         */
-        String[] columns = {
-                PetEntry.COLUMN_PET_ID,
-                PetEntry.COLUMN_PET_NAME,
-                PetEntry.COLUMN_PET_BREED
-        };
-
-        /*
-        WHERE
-         */
-        String selection = "";
-        String[] selectionArgs = new String[]{};
-
-        /*
-        ORDER BY
-         */
-        String sortOrder = PetEntry.COLUMN_PET_ID + " ASC";
-
-        /*
-        Result - Read from entire Table
-         */
-        return getContentResolver().query(PetEntry.CONTENT_URI_PETS, columns, selection, selectionArgs, sortOrder);
     }
 
     @Override
@@ -131,14 +103,12 @@ public class CatalogActivity extends AppCompatActivity {
             */
             case R.id.action_insert_dummy_data:
                 insertDummyPet();
-                displayPetsCatalog();
                 return true;
             /*
             Delete all Entries
              */
             case R.id.action_delete_all_entries:
                 deleteAllPets();
-                displayPetsCatalog();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -160,5 +130,41 @@ public class CatalogActivity extends AppCompatActivity {
 
     private int deleteAllPets() {
         return getContentResolver().delete(PetEntry.CONTENT_URI_PETS, null, null);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+         /*
+        Columns that are included in the result
+         */
+        String[] columns = {
+                PetEntry.COLUMN_PET_ID,
+                PetEntry.COLUMN_PET_NAME,
+                PetEntry.COLUMN_PET_BREED
+        };
+
+        /*
+        WHERE
+         */
+        String selection = "";
+        String[] selectionArgs = new String[]{};
+
+        /*
+        ORDER BY
+         */
+        String sortOrder = PetEntry.COLUMN_PET_ID + " ASC";
+
+        return new CursorLoader(this, PetEntry.CONTENT_URI_PETS, columns, selection, selectionArgs, sortOrder);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        adapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        adapter.swapCursor(null);
     }
 }

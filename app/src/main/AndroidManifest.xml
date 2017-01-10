@@ -42,7 +42,7 @@
         </activity>
 
         <provider
-            android:name=".database.PetProvider"
+            android:name=".data.PetProvider"
             android:authorities="com.example.android.pets"
             android:enabled="true"
             android:exported="false">

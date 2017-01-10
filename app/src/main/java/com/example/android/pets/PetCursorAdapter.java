@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
 
-import com.example.android.pets.database.PetContract.PetEntry;
+import com.example.android.pets.data.ShelterContract.PetEntry;
 
 /**
  * Created by Jan on 10.01.2017.

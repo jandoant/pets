@@ -69,6 +69,10 @@ the License.
 * create EmptyView
 * create Pet Cursor Adapter
 
+###v.08 Using a Cursor Loader
+
+
+
 
 
 

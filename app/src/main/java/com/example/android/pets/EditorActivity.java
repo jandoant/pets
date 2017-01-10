@@ -32,8 +32,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.example.android.pets.database.PetContract.PetEntry;
-import com.example.android.pets.database.ShelterDbHelper;
+import com.example.android.pets.data.ShelterContract.PetEntry;
+import com.example.android.pets.data.ShelterDbHelper;
 import com.example.android.pets.models.Pet;
 
 import static android.R.attr.id;
@@ -71,7 +71,7 @@ public class EditorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
 
-        // To access our database, we instantiate our subclass of SQLiteOpenHelper
+        // To access our data, we instantiate our subclass of SQLiteOpenHelper
         // and pass the context, which is the current activity.
         shelterDbHelper = new ShelterDbHelper(this);
 

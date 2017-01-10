@@ -1,10 +1,10 @@
-package com.example.android.pets.database;
+package com.example.android.pets.data;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.example.android.pets.database.PetContract.PetEntry;
+import com.example.android.pets.data.ShelterContract.PetEntry;
 
 /**
  * Created by Jan on 05.01.2017.
@@ -35,7 +35,7 @@ public class ShelterDbHelper extends SQLiteOpenHelper {
 
     //Todo: (4) - Implement onCreate()
     /*
-     * Called when the database is created for the first time.
+     * Called when the data is created for the first time.
      * This is where the creation of tables and the initial population of the tables should happen.
      * @param db - The Database
      */
