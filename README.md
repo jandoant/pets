@@ -52,7 +52,7 @@ the License.
 * adds Pet Object
 * database info is shown in simple Text View
 
-###v.02 add Content Provider to App - (1)
+###v.02 read operation via Content Provider
 * read all Pets provided through content provider instead ofdirect database access
 
 ###v.03 insert operation via Content Provider
@@ -60,6 +60,8 @@ the License.
 ###v.04 update operation via Content Provider
 
 ###v.05 delete operation via Content Provider
+
+###v.06. Finished Content Provider Implementation
 
 
 

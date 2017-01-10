@@ -6,12 +6,18 @@ package com.example.android.pets.models;
 
 public class Pet {
 
+    /*
+    Fields
+     */
     private int id;
     private String name;
     private String breed;
     private int gender;
     private int weight;
 
+    /*
+    Konstruktor
+     */
     public Pet(int id, String name, String breed, int gender, int weight) {
         this.id = id;
         this.breed = breed;

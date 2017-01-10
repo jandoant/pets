@@ -13,6 +13,9 @@ import com.example.android.pets.database.PetContract.PetEntry;
 
 public class PetProvider extends ContentProvider {
 
+    /*
+    Constants for Routing
+     */
     private static final int PETS = 100;
     private static final int PET_ID = 101;
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -30,13 +33,16 @@ public class PetProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-
         shelterDbHelper = new ShelterDbHelper(getContext());
         return true;
     }
 
     /**
      * Insert new data into the provider with the given ContentValues.
+     *
+     * @param uri    The content:// URI of the insertion request. This must not be null.
+     * @param values The Values of the Item that is being inserted
+     * @return - the Uri of the newly created Item
      */
     @Override
     public Uri insert(@NonNull Uri uri, ContentValues values) {
@@ -44,6 +50,7 @@ public class PetProvider extends ContentProvider {
         int match = uriMatcher.match(uri);
 
         //catch illegal Uris
+        //Insertion always happens on the entire table
         switch (match) {
             case PETS:
                 return insertSinglePet(uri, values);
@@ -52,6 +59,13 @@ public class PetProvider extends ContentProvider {
         }//Ende switch
     }
 
+    /**
+     * Helper Method - Validates the data and inserts it into the Database.
+     *
+     * @param uri    The content:// URI of the insertion request. This must not be null.
+     * @param values values The Values of the Item that is being inserted
+     * @return - the Uri of the newly created Item
+     */
     private Uri insertSinglePet(Uri uri, ContentValues values) {
 
         //Validation
@@ -82,18 +96,18 @@ public class PetProvider extends ContentProvider {
         return ContentUris.withAppendedId(uri, row);
     }
 
-    /**
-     * Perform the query for the given URI. Use the given projection, selection, selection arguments, and sort order.
+    /*
+    Perform the query for the given URI. Use the given projection, selection, selection arguments, and sort order.
      */
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection,
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
 
         SQLiteDatabase db = shelterDbHelper.getReadableDatabase();
-        Cursor cursor = null;
+        Cursor cursor;
 
+        // Query a single item or the entire table?
         int match = uriMatcher.match(uri);
-
         switch (match) {
 
             case PETS:
@@ -108,7 +122,7 @@ public class PetProvider extends ContentProvider {
 
                 cursor = db.query(PetEntry.TABLE_NAME_PETS, projection, selection, selectionArgs, null, null, sortOrder, null);
                 break;
-            case UriMatcher.NO_MATCH:
+            default:
                 //invalid Uri
                 throw new IllegalArgumentException("Cannot query unknown Uri" + uri);
         }//Ende switch
@@ -199,6 +213,18 @@ public class PetProvider extends ContentProvider {
      */
     @Override
     public String getType(Uri uri) {
-        return null;
+
+        int match = uriMatcher.match(uri);
+
+        switch (match) {
+
+            case PETS:
+                return PetEntry.CONTENT_LIST_TYPE;
+            case PET_ID:
+                return PetEntry.CONTENT_ITEM_TYPE;
+            default:
+                //invalid Uri
+                throw new IllegalStateException("Unknown URI " + uri + " with match " + match);
+        }
     }
 }
